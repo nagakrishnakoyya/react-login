@@ -1,24 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from "react-router-dom";
+import { useState, useEffect } from "react";
+
+import Home from "./components/pages/Home";
+import About from "./components/pages/About";
+import Contact from "./components/pages/Contact";
+import Navbar from "./components/pages/Navbar";
+import Login from "./components/pages/Login";
+import PrivateRouter from "./components/router/PrivateRouter";
+import PageNotFound from "./components/pages/PageNotFound";
 
 function App() {
+  const [isAuth, setIsAuth] = useState(false);
+  const token = localStorage.getItem("access_token");
+  useEffect(() => {
+    if (token && token !== "undefined") {
+      setAuth(true);
+    }
+  }, [token]);
+
+  const setAuth = (flag) => {
+    setIsAuth(flag);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Navbar setAuth={setAuth} />
+        <Switch>
+          <Route
+            exact
+            path="/"
+            component={() =>
+              isAuth ? <Redirect to="/home" /> : <Login setAuth={setAuth} />
+            }
+          />
+          <PrivateRouter exact path="/home" component={Home} isAuth={isAuth} />
+          <Route exact path="/about" component={About} />
+          <PrivateRouter
+            exact
+            path="/contact"
+            component={Contact}
+            isAuth={isAuth}
+          />
+          <Route path="/*" component={PageNotFound} />
+        </Switch>
+      </div>
+    </Router>
   );
 }
 
